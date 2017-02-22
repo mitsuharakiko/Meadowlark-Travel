@@ -2,13 +2,21 @@
 <html>
     <head>
         <title>Meadowlark Travel</title>
+        <link rel="stylesheet" href="/css/bootstrap.min.css">
         {{#if showTest}}
         <link rel="stylesheet" href="/vendor/mocha.css">
         {{/if}}
-        <script src="//code.jquery.com/jquery-2.0.2.min.js"></script>
+       
     </head>
     <body>
         <img src="/img/logo.jpg" alt="Meadowlark Travel Logo"/>
+        {{#if flash}}
+            <div class="alert alert-dismissible alert-{{flash.type}}">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                <strong>{{flash.intro}}</strong>{{{flash.message}}}
+            </div>
+        {{/if}}
+        
         {{{body}}}
 
         {{#if showTest}}
@@ -25,5 +33,8 @@
             {{/if}}
             <script>mocha.run();</script>
         {{/if}}
+         <script src="//code.jquery.com/jquery-2.0.2.min.js"></script>
+        {{{_sections.jquery}}}
+        <script src="/js/bootstrap.min.js"></script>
     </body>
 </html>
