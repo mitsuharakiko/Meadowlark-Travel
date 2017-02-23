@@ -5,6 +5,8 @@ var formidable = require("formidable");
 //jquery upload file plugin
 //var jqUpload = require("jquery-file-upload-middleware");
 var cookie = require("cookie-parser");
+//引入文件系统
+var fs = require("fs");
 
 //引入cookie凭证
 var credentials = require("./lib/credentials.js");
@@ -24,7 +26,7 @@ var handlebars = require("express3-handlebars").create({
     helpers: {
         section: function(name,options){
             if(!this._sections) this._sections = {};
-            this._sections[name] = options.fn(this);
+            this._sections[name] = options.fn(this); 
             return null;
         }
     }
@@ -36,8 +38,23 @@ app.set("view engine","handlebars");
 //设置nodejs服务器端口号
 app.set("port",process.env.PORT || 3000);
 
+//攀岩包免责条款
+//app.use(require("./lib/tourRequiresWaiver.js"));
+/*
+var cartValidation = require("./lib/cartValidation.js");
+app.use(cartValidation.checkWaivers);
+app.use(cartValidation.chechGuestCounts);
+*/
+
 //static中间件可以将一个或者多个目录指派为包含静态资源的目录，资源不会经过任何处理直接发送给客户端
 app.use(express.static(__dirname+"/public"));   //必须在所有的路由之前
+
+var dataDir = __dirname + "/data";
+var vacationPhotoDir = dataDir + '/vacation-photo';
+fs.existsSync(dataDir) || fs.mkdirSync(dataDir);
+fs.existsSync(vacationPhotoDir) || fs.mkdirSync(vacationPhotoDir);
+
+
 
 //mocha的页面检查开启中间件
 app.use(function(req,res,next){
@@ -54,12 +71,12 @@ app.use(function(req,res,next){
 
 //session会话
 app.use(function(req,res,next){
-    var flash = {
+     //res.session.flash = {
+     flash = {  
         type: "danger",
         inrto: "database",
         message: "白痴奶茶大西瓜"
     };
-    //res.locals.flash = req.session.flash;
     res.locals.flash = flash;
     //delete req.session.flash;
     next();
@@ -116,9 +133,28 @@ app.post("/contest/vacation-photo/:year/:month",function(req,res){
     var form = new formidable.IncomingForm();
     form.parse(req,function(err,fields,files){
         if(err) res.redirect(303,"/error");
+        if(err){
+            res.session.flash = {
+                type: "danger",
+                intro: "Oops!",
+                message: "There was an error processing your submission. Please try again."
+            };
+            return res.redirect(303,"/contest/vacation-photo");
+        }
+        var photo = files.photo;
+        var dir = vacationPhotoDir + '/' + Date.now();
+        var path = dir + "/" + photo.name;
+        fs.mkdirSync(dir);
+        fs.renameSync(photo.path, dir + "/" + photo.name);
+        //saveContestEntry("vacation-photo",fields.email,req.params.year,req.params.month,path);
+        req.session.flash ={
+            type: "success",
+            intro: "Good Luck!",
+            message: "You have been entered into the contest."
+        };
         console.log("received fields:" + fields);
         console.log("received files:" + files);
-        res.redirect(303,"/thank-you");
+        res.redirect(303,"/contest/vacation-photo/entries");
     });
 });
 
@@ -167,7 +203,7 @@ app.post("/newsletter",function(req,res){
     if(!email.match(VALID_EMAIL_REGEX)){
         if(req.xhr) return res.json({error:"Invalid name email address"});
         req.session.flash = {
-            type: "danger",
+            type: "danger", 
             intro: "Validation error!",
             message: "The mail address you entered was not valid!"
         };
@@ -197,6 +233,64 @@ app.post("/newsletter",function(req,res){
     });
 });
 
+
+/* little example */
+/*
+app.use(function(req,res,next){
+    console.log('\n\nALLWAYS');
+    next();
+});
+
+app.get('/a',function(req,res){
+    console.log('/a: 路由终止');
+    res.send("a");
+});
+
+app.get('/a',function(req,res){
+    console.log('/a: 永远不会调用');
+});
+
+app.get('/b',function(req,res,next){
+    console.log('/b: 路由未终止');
+    next();
+});
+
+app.use(function(req,res,next){
+    console.log('SOMETIMES');
+    next();
+});
+
+app.get('/b',function(req,res,next){
+    console.log('/b: (part2): 抛出错误');
+    throw new Error("b 失败");
+});
+
+app.get('/b',function(err,req,res,next){
+    console.log('/b: 检测到错误并传递');
+    next(err);
+});
+
+app.get('/c',function(err,req){
+    console.log('/c: 抛出错误');
+    throw new Error("c 失败");
+});
+
+app.use('/c',function(err,req,res,next){
+    console.log('/c: 检测到错误但是不传递。');
+    next();
+});
+
+app.use(function(err,req,res,next){
+    console.log('检测未处理的错误' + err.message);
+    res.send('500 - 服务器错误');
+});
+
+app.use(function(req,res){
+    console.log(' 未处理的路由 ');
+    res.send("404 - 未找到");
+});
+*/
+/* --- little example --- */
 
 //404
 app.use(function(req,res){

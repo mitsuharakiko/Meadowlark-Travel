@@ -10,6 +10,7 @@
     </head>
     <body>
         <img src="/img/logo.jpg" alt="Meadowlark Travel Logo"/>
+        
         {{#if flash}}
             <div class="alert alert-dismissible alert-{{flash.type}}">
                 <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
@@ -33,7 +34,8 @@
             {{/if}}
             <script>mocha.run();</script>
         {{/if}}
-         <script src="//code.jquery.com/jquery-2.0.2.min.js"></script>
+
+        <script src="//code.jquery.com/jquery-2.0.2.min.js"></script>
         {{{_sections.jquery}}}
         <script src="/js/bootstrap.min.js"></script>
     </body>
