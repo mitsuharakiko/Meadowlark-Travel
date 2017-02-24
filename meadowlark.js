@@ -70,6 +70,7 @@ app.use(function(req,res,next){
 });
 
 //session会话
+/*
 app.use(function(req,res,next){
      //res.session.flash = {
      flash = {  
@@ -81,6 +82,7 @@ app.use(function(req,res,next){
     //delete req.session.flash;
     next();
 });
+*/
 
 app.get("/",function(req,res){
     //res.type("text/plain");   //使用视图模板引擎以后，就不要res.type()，防止强制解析成文本，浏览器上显示的也是文本标签而不是渲染的dom
